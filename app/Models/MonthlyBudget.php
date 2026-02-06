@@ -32,13 +32,26 @@ class MonthlyBudget extends Model
 
     public static function getOrCreateCurrent(): self
     {
-        $month = (int) now()->format('n');
-        $year = (int) now()->format('Y');
+        // Get the most recent budget record (by month/year combination)
+        $latest = self::orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->first();
 
-        return self::firstOrCreate(
-            ['month' => $month, 'year' => $year],
-            ['budget_limit' => 10000.00, 'total_approved' => 0.00]
-        );
+        // If no budget exists, create one for the actual current month
+        if (!$latest) {
+            $month = (int) now()->format('n');
+            $year = (int) now()->format('Y');
+
+            return self::create([
+                'month' => $month,
+                'year' => $year,
+                'budget_limit' => 10000.00,
+                'total_approved' => 0.00,
+            ]);
+        }
+
+        // Return the latest budget (which represents the "current" virtual month)
+        return $latest;
     }
 
     public static function getForMonth(int $month, int $year): ?self
@@ -96,12 +109,20 @@ class MonthlyBudget extends Model
                 $nextYear++;
             }
 
-            // Update to next month and reset total_approved
-            $this->update([
-                'month' => $nextMonth,
-                'year' => $nextYear,
-                'total_approved' => 0.00,
-            ]);
+            // Check if next month budget already exists
+            $nextBudget = self::where('month', $nextMonth)
+                ->where('year', $nextYear)
+                ->first();
+
+            if (!$nextBudget) {
+                // Create new budget record for next month
+                $nextBudget = self::create([
+                    'month' => $nextMonth,
+                    'year' => $nextYear,
+                    'budget_limit' => $this->budget_limit,
+                    'total_approved' => 0.00,
+                ]);
+            }
 
             return [
                 'history' => $history,
