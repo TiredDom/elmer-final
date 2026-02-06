@@ -56,7 +56,7 @@ class MonthlyBudget extends Model
         $this->increment('total_approved', $amount);
     }
 
-    public function resetBudget(): BudgetHistory
+    public function advanceToNextMonth(): array
     {
         return DB::transaction(function () {
             // Get expense counts for this budget period
@@ -74,7 +74,7 @@ class MonthlyBudget extends Model
                 ->where('status', 'rejected')
                 ->count();
 
-            // Save to history
+            // Save current month to history
             $history = BudgetHistory::create([
                 'month' => $this->month,
                 'year' => $this->year,
@@ -87,12 +87,27 @@ class MonthlyBudget extends Model
                 'reset_at' => now(),
             ]);
 
-            // Reset the budget
+            // Calculate next month
+            $nextMonth = $this->month + 1;
+            $nextYear = $this->year;
+
+            if ($nextMonth > 12) {
+                $nextMonth = 1;
+                $nextYear++;
+            }
+
+            // Update to next month and reset total_approved
             $this->update([
+                'month' => $nextMonth,
+                'year' => $nextYear,
                 'total_approved' => 0.00,
             ]);
 
-            return $history;
+            return [
+                'history' => $history,
+                'new_month' => $nextMonth,
+                'new_year' => $nextYear,
+            ];
         });
     }
 }

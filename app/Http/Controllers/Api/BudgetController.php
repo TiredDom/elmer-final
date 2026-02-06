@@ -23,19 +23,19 @@ class BudgetController extends Controller
         ]);
     }
 
-    public function resetBudget(Request $request): JsonResponse
+    public function advanceMonth(Request $request): JsonResponse
     {
         $budget = MonthlyBudget::getOrCreateCurrent();
 
         try {
-            $history = $budget->resetBudget();
+            $result = $budget->advanceToNextMonth();
 
             return response()->json([
-                'message' => 'Budget reset successfully and saved to history',
-                'history' => $history,
+                'message' => 'Budget advanced to next month successfully',
+                'history' => $result['history'],
                 'new_budget' => [
-                    'month' => $budget->month,
-                    'year' => $budget->year,
+                    'month' => $result['new_month'],
+                    'year' => $result['new_year'],
                     'budget_limit' => (float) $budget->budget_limit,
                     'total_approved' => (float) $budget->total_approved,
                     'remaining_budget' => $budget->remaining_budget,
@@ -43,7 +43,7 @@ class BudgetController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to reset budget',
+                'message' => 'Failed to advance month',
                 'error' => $e->getMessage(),
             ], 500);
         }
