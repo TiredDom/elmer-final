@@ -76,7 +76,6 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Budget Limit</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Approved</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Remaining</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expenses</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reset Date</th>
@@ -88,18 +87,11 @@
                                     {{ monthName(record.month) }} {{ record.year }}
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-900">₱{{ formatAmount(record.budget_limit) }}</td>
-                                <td class="px-4 py-3 text-sm text-green-600">₱{{ formatAmount(record.total_approved) }}</td>
                                 <td class="px-4 py-3 text-sm" :class="record.remaining_budget > 0 ? 'text-blue-600' : 'text-red-600'">
                                     ₱{{ formatAmount(record.remaining_budget) }}
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-900">
-                                    <div class="space-y-1">
-                                        <div><span class="font-medium">{{ record.total_expenses_count || 0 }}</span> total</div>
-                                        <div class="text-xs">
-                                            <span class="text-green-600">{{ record.approved_count || 0 }} approved</span> ·
-                                            <span class="text-red-600">{{ record.rejected_count || 0 }} rejected</span>
-                                        </div>
-                                    </div>
+                                    {{ record.total_expenses_count || 0 }} submitted
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-500">{{ formatDate(record.reset_at) }}</td>
                             </tr>

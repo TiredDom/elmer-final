@@ -13,11 +13,8 @@ class BudgetHistory extends Model
         'month',
         'year',
         'budget_limit',
-        'total_approved',
         'remaining_budget',
         'total_expenses_count',
-        'approved_count',
-        'rejected_count',
         'reset_at',
     ];
 
@@ -25,7 +22,6 @@ class BudgetHistory extends Model
     {
         return [
             'budget_limit' => 'decimal:2',
-            'total_approved' => 'decimal:2',
             'remaining_budget' => 'decimal:2',
             'reset_at' => 'datetime',
         ];

@@ -13,11 +13,8 @@ return new class extends Migration
             $table->integer('month');
             $table->integer('year');
             $table->decimal('budget_limit', 10, 2);
-            $table->decimal('total_approved', 10, 2);
             $table->decimal('remaining_budget', 10, 2);
             $table->integer('total_expenses_count')->default(0);
-            $table->integer('approved_count')->default(0);
-            $table->integer('rejected_count')->default(0);
             $table->timestamp('reset_at');
             $table->timestamps();
         });
