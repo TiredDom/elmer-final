@@ -10,20 +10,20 @@
             <AppCard class="mb-8">
                 <div class="flex justify-between items-start mb-6">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Current Month Budget</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Showing Budget of {{ monthName(currentBudget.month) }} {{ currentBudget.year }}</h3>
                         <p class="text-sm text-gray-500">
-                            {{ monthName(currentBudget.month) }} {{ currentBudget.year }}
+                            Current month budget period
                         </p>
                     </div>
                     <AppButton
-                        @click="showResetConfirm = true"
-                        variant="danger"
-                        :disabled="resetting"
+                        @click="showAdvanceConfirm = true"
+                        variant="primary"
+                        :disabled="advancing"
                     >
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
-                        Reset Budget
+                        Advance 1 Month
                     </AppButton>
                 </div>
 
@@ -104,27 +104,28 @@
             </AppCard>
         </div>
 
-        <!-- Reset Confirmation Modal -->
-        <div v-if="showResetConfirm" class="fixed inset-0 z-50 overflow-y-auto" @click.self="showResetConfirm = false">
+        <!-- Advance Confirmation Modal -->
+        <div v-if="showAdvanceConfirm" class="fixed inset-0 z-50 overflow-y-auto" @click.self="showAdvanceConfirm = false">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-black opacity-30"></div>
                 <div class="relative bg-white rounded-lg max-w-md w-full p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirm Budget Reset</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirm Budget Advance</h3>
                     <p class="text-gray-600 mb-6">
-                        Are you sure you want to reset the budget? This will:
+                        Are you sure you want to advance the budget to the next month? This will:
                     </p>
                     <ul class="list-disc list-inside text-gray-600 mb-6 space-y-2">
                         <li>Save current budget data to history</li>
+                        <li>Advance to {{ nextMonthName }}</li>
                         <li>Reset the total approved amount to ₱0.00</li>
                         <li>Keep the budget limit at ₱{{ formatAmount(currentBudget.budget_limit) }}</li>
                         <li>All expense records will be preserved</li>
                     </ul>
                     <div class="flex justify-end space-x-3">
-                        <AppButton @click="showResetConfirm = false" variant="secondary">
+                        <AppButton @click="showAdvanceConfirm = false" variant="secondary">
                             Cancel
                         </AppButton>
-                        <AppButton @click="resetBudget" variant="danger" :disabled="resetting">
-                            {{ resetting ? 'Resetting...' : 'Yes, Reset Budget' }}
+                        <AppButton @click="advanceBudget" variant="primary" :disabled="advancing">
+                            {{ advancing ? 'Advancing...' : 'Yes, Advance to Next Month' }}
                         </AppButton>
                     </div>
                 </div>
@@ -149,12 +150,26 @@ const currentBudget = ref({
 
 const history = ref([]);
 const loading = ref(false);
-const resetting = ref(false);
-const showResetConfirm = ref(false);
+const advancing = ref(false);
+const showAdvanceConfirm = ref(false);
 
 const budgetPercentage = computed(() => {
     if (currentBudget.value.budget_limit === 0) return 0;
     return Math.round((currentBudget.value.total_approved / currentBudget.value.budget_limit) * 100);
+});
+
+const nextMonthName = computed(() => {
+    let nextMonth = currentBudget.value.month + 1;
+    let nextYear = currentBudget.value.year;
+    
+    if (nextMonth > 12) {
+        nextMonth = 1;
+        nextYear++;
+    }
+    
+    const months = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+    return `${months[nextMonth]} ${nextYear}`;
 });
 
 const monthName = (month) => {
@@ -213,6 +228,24 @@ const resetBudget = async () => {
         alert('Failed to reset budget. Please try again.');
     } finally {
         resetting.value = false;
+    }
+};
+
+const advanceBudget = async () => {
+    advancing.value = true;
+    try {
+        const response = await budgetService.advanceBudget();
+        alert(response.data.message);
+        showAdvanceConfirm.value = false;
+
+        // Refresh data
+        await fetchCurrentBudget();
+        await fetchHistory();
+    } catch (error) {
+        console.error('Failed to advance budget:', error);
+        alert('Failed to advance budget. Please try again.');
+    } finally {
+        advancing.value = false;
     }
 };
 

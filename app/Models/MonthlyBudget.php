@@ -95,4 +95,58 @@ class MonthlyBudget extends Model
             return $history;
         });
     }
+
+    public function advanceBudget(): array
+    {
+        return DB::transaction(function () {
+            // Get expense counts for this budget period
+            $totalExpenses = Expense::where('budget_month', $this->month)
+                ->where('budget_year', $this->year)
+                ->count();
+
+            $approvedCount = Expense::where('budget_month', $this->month)
+                ->where('budget_year', $this->year)
+                ->where('status', 'approved')
+                ->count();
+
+            $rejectedCount = Expense::where('budget_month', $this->month)
+                ->where('budget_year', $this->year)
+                ->where('status', 'rejected')
+                ->count();
+
+            // Save current budget to history
+            $history = BudgetHistory::create([
+                'month' => $this->month,
+                'year' => $this->year,
+                'budget_limit' => $this->budget_limit,
+                'total_approved' => $this->total_approved,
+                'remaining_budget' => $this->remaining_budget,
+                'total_expenses_count' => $totalExpenses,
+                'approved_count' => $approvedCount,
+                'rejected_count' => $rejectedCount,
+                'reset_at' => now(),
+            ]);
+
+            // Calculate next month and year
+            $nextMonth = $this->month + 1;
+            $nextYear = $this->year;
+            
+            if ($nextMonth > 12) {
+                $nextMonth = 1;
+                $nextYear++;
+            }
+
+            // Update current budget to next month
+            $this->update([
+                'month' => $nextMonth,
+                'year' => $nextYear,
+                'total_approved' => 0.00,
+            ]);
+
+            return [
+                'history' => $history,
+                'new_budget' => $this->fresh(),
+            ];
+        });
+    }
 }

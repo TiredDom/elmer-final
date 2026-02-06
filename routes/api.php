@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/budget/current', [BudgetController::class, 'getCurrentBudget']);
     Route::get('/budget/history', [BudgetController::class, 'getHistory']);
     Route::post('/budget/reset', [BudgetController::class, 'resetBudget']);
+    Route::post('/budget/advance', [BudgetController::class, 'advanceBudget']);
 
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);

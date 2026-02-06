@@ -49,6 +49,32 @@ class BudgetController extends Controller
         }
     }
 
+    public function advanceBudget(Request $request): JsonResponse
+    {
+        $budget = MonthlyBudget::getOrCreateCurrent();
+
+        try {
+            $result = $budget->advanceBudget();
+
+            return response()->json([
+                'message' => 'Budget advanced to next month successfully',
+                'history' => $result['history'],
+                'new_budget' => [
+                    'month' => $result['new_budget']->month,
+                    'year' => $result['new_budget']->year,
+                    'budget_limit' => (float) $result['new_budget']->budget_limit,
+                    'total_approved' => (float) $result['new_budget']->total_approved,
+                    'remaining_budget' => $result['new_budget']->remaining_budget,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to advance budget',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function getHistory(Request $request): JsonResponse
     {
         $histories = BudgetHistory::orderBy('reset_at', 'desc')
