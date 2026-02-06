@@ -140,6 +140,9 @@ import AppCard from '../../components/AppCard.vue';
 import AppButton from '../../components/AppButton.vue';
 import budgetService from '../../services/budgetService';
 
+const MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+
 const currentBudget = ref({
     month: 0,
     year: 0,
@@ -167,15 +170,11 @@ const nextMonthName = computed(() => {
         nextYear++;
     }
     
-    const months = ['', 'January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'];
-    return `${months[nextMonth]} ${nextYear}`;
+    return `${MONTH_NAMES[nextMonth]} ${nextYear}`;
 });
 
 const monthName = (month) => {
-    const months = ['', 'January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'];
-    return months[month];
+    return MONTH_NAMES[month];
 };
 
 const formatAmount = (amount) => {
@@ -210,24 +209,6 @@ const fetchHistory = async () => {
         console.error('Failed to fetch budget history:', error);
     } finally {
         loading.value = false;
-    }
-};
-
-const resetBudget = async () => {
-    resetting.value = true;
-    try {
-        const response = await budgetService.resetBudget();
-        alert(response.data.message);
-        showResetConfirm.value = false;
-
-        // Refresh data
-        await fetchCurrentBudget();
-        await fetchHistory();
-    } catch (error) {
-        console.error('Failed to reset budget:', error);
-        alert('Failed to reset budget. Please try again.');
-    } finally {
-        resetting.value = false;
     }
 };
 
