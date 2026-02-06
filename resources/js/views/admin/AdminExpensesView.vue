@@ -51,7 +51,7 @@
                             <td class="px-4 py-3 text-sm font-medium text-gray-900">₱{{ formatAmount(expense.amount) }}</td>
                             <td class="px-4 py-3">
                                 <StatusBadge :status="expense.status" />
-                                <p v-if="expense.rejection_reason" class="text-xs text-red-500 mt-1 max-w-xs truncate">
+                                <p v-if="expense.rejection_reason" class="text-xs text-red-600 mt-1 max-w-xs" :title="expense.rejection_reason">
                                     {{ expense.rejection_reason }}
                                 </p>
                             </td>
