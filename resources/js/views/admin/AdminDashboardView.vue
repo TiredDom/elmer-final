@@ -3,7 +3,7 @@
         <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p class="text-gray-600 mt-1">Overview of expense management system</p>
+            <p class="text-gray-600 mt-1">Showing budget for {{ currentBudgetPeriod }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -169,6 +169,15 @@ const pendingExpenses = computed(() => {
 const budgetPercentage = computed(() => {
     if (!dashboard.value?.budget_limit) return 0;
     return Math.round((dashboard.value.total_approved / dashboard.value.budget_limit) * 100);
+});
+
+const currentBudgetPeriod = computed(() => {
+    if (!dashboard.value?.month || !dashboard.value?.year) {
+        return new Date().toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
+    }
+    const months = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+    return `${months[dashboard.value.month]} ${dashboard.value.year}`;
 });
 
 const formatAmount = (amount) => {

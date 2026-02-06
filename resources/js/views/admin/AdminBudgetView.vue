@@ -3,7 +3,7 @@
         <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-gray-900">Budget Overview</h1>
-            <p class="text-gray-600 mt-1">Monitor monthly budget allocation and usage</p>
+            <p class="text-gray-600 mt-1">Showing budget for {{ currentMonthYear }}</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -94,10 +94,10 @@
                     </p>
                 </div>
                 <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                    <h4 class="font-medium text-amber-900">Budget Reset</h4>
+                    <h4 class="font-medium text-amber-900">Budget Advancement</h4>
                     <p class="text-sm text-amber-700 mt-1">
-                        Users can reset the budget manually from their budget page.
-                        Current month: {{ currentMonthYear }}
+                        Users can advance to the next month from their budget page.
+                        Current budget period: {{ currentMonthYear }}
                     </p>
                 </div>
                 <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
@@ -178,7 +178,10 @@ const budgetBarClass = computed(() => {
 });
 
 const currentMonthYear = computed(() => {
-    return new Date().toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
+    if (!dashboard.value?.month || !dashboard.value?.year) {
+        return new Date().toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
+    }
+    return `${monthName(dashboard.value.month)} ${dashboard.value.year}`;
 });
 
 const monthName = (month) => {
