@@ -56,6 +56,9 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/ht
 # Run migrations
 RUN php artisan migrate --force || true
 
+# Run seeders to create admin user
+RUN php artisan db:seed --force || true
+
 # Expose port 80
 EXPOSE 80
 
