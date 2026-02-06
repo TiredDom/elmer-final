@@ -11,8 +11,8 @@ class ExpenseService
 {
     public function createExpense(User $user, array $data): Expense
     {
-        $month = (int) now()->format('n');
-        $year = (int) now()->format('Y');
+        // Get the current virtual budget period (not the real current date)
+        $budget = MonthlyBudget::getOrCreateCurrent();
 
         $expense = new Expense([
             'user_id' => $user->id,
@@ -20,11 +20,9 @@ class ExpenseService
             'description' => $data['description'] ?? null,
             'amount' => $data['amount'],
             'status' => 'pending',
-            'budget_month' => $month,
-            'budget_year' => $year,
+            'budget_month' => $budget->month,
+            'budget_year' => $budget->year,
         ]);
-
-        $budget = MonthlyBudget::getOrCreateCurrent();
 
         if (!$budget->canApproveAmount((float) $data['amount'])) {
             $expense->status = 'rejected';
@@ -106,13 +104,17 @@ class ExpenseService
 
     public function getMonthlyStats(?int $month = null, ?int $year = null): array
     {
-        $month = $month ?? (int) now()->format('n');
-        $year = $year ?? (int) now()->format('Y');
-
-        $budget = MonthlyBudget::getForMonth($month, $year);
-
-        if (!$budget) {
+        // If no month/year specified, use the virtual current budget period
+        if ($month === null || $year === null) {
             $budget = MonthlyBudget::getOrCreateCurrent();
+            $month = $budget->month;
+            $year = $budget->year;
+        } else {
+            $budget = MonthlyBudget::getForMonth($month, $year);
+
+            if (!$budget) {
+                $budget = MonthlyBudget::getOrCreateCurrent();
+            }
         }
 
         $pendingCount = Expense::where('budget_month', $month)
