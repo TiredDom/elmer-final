@@ -11,7 +11,6 @@ class ExpenseService
 {
     public function createExpense(User $user, array $data): Expense
     {
-        // Get the current virtual budget period (not the real current date)
         $budget = MonthlyBudget::getOrCreateCurrent();
 
         $expense = new Expense([
@@ -104,7 +103,6 @@ class ExpenseService
 
     public function getMonthlyStats(?int $month = null, ?int $year = null): array
     {
-        // If no month/year specified, use the virtual current budget period
         if ($month === null || $year === null) {
             $budget = MonthlyBudget::getOrCreateCurrent();
             $month = $budget->month;
