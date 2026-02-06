@@ -53,6 +53,13 @@
                                 My Expenses
                             </router-link>
                             <router-link
+                                to="/budget"
+                                class="px-3 py-2 text-sm font-medium rounded-md"
+                                :class="$route.path === '/budget' ? 'text-indigo-600 bg-indigo-50' : 'text-gray-600 hover:text-gray-900'"
+                            >
+                                Budget
+                            </router-link>
+                            <router-link
                                 to="/expenses/new"
                                 class="px-3 py-2 text-sm font-medium rounded-md"
                                 :class="$route.path === '/expenses/new' ? 'text-indigo-600 bg-indigo-50' : 'text-gray-600 hover:text-gray-900'"

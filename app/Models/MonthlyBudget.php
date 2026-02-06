@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class MonthlyBudget extends Model
 {
@@ -53,5 +54,45 @@ class MonthlyBudget extends Model
     public function addApprovedAmount(float $amount): void
     {
         $this->increment('total_approved', $amount);
+    }
+
+    public function resetBudget(): BudgetHistory
+    {
+        return DB::transaction(function () {
+            // Get expense counts for this budget period
+            $totalExpenses = Expense::where('budget_month', $this->month)
+                ->where('budget_year', $this->year)
+                ->count();
+
+            $approvedCount = Expense::where('budget_month', $this->month)
+                ->where('budget_year', $this->year)
+                ->where('status', 'approved')
+                ->count();
+
+            $rejectedCount = Expense::where('budget_month', $this->month)
+                ->where('budget_year', $this->year)
+                ->where('status', 'rejected')
+                ->count();
+
+            // Save to history
+            $history = BudgetHistory::create([
+                'month' => $this->month,
+                'year' => $this->year,
+                'budget_limit' => $this->budget_limit,
+                'total_approved' => $this->total_approved,
+                'remaining_budget' => $this->remaining_budget,
+                'total_expenses_count' => $totalExpenses,
+                'approved_count' => $approvedCount,
+                'rejected_count' => $rejectedCount,
+                'reset_at' => now(),
+            ]);
+
+            // Reset the budget
+            $this->update([
+                'total_approved' => 0.00,
+            ]);
+
+            return $history;
+        });
     }
 }

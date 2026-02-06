@@ -37,6 +37,12 @@ const routes = [
         meta: { requiresAuth: true },
     },
     {
+        path: '/budget',
+        name: 'budget',
+        component: () => import('../views/user/BudgetView.vue'),
+        meta: { requiresAuth: true },
+    },
+    {
         path: '/admin',
         name: 'admin.dashboard',
         component: () => import('../views/admin/AdminDashboardView.vue'),

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminExpenseController;
@@ -16,6 +17,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/expenses', [ExpenseController::class, 'index']);
     Route::post('/expenses', [ExpenseController::class, 'store']);
     Route::get('/expenses/{id}', [ExpenseController::class, 'show']);
+
+    // Budget routes
+    Route::get('/budget/current', [BudgetController::class, 'getCurrentBudget']);
+    Route::get('/budget/history', [BudgetController::class, 'getHistory']);
+    Route::post('/budget/reset', [BudgetController::class, 'resetBudget']);
 
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);

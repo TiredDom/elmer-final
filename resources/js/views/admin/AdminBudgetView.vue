@@ -84,7 +84,7 @@
             </AppCard>
         </div>
 
-        <AppCard title="Budget Information">
+        <AppCard title="Budget Information" class="mb-8">
             <div class="space-y-4">
                 <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <h4 class="font-medium text-blue-900">Monthly Budget Limit</h4>
@@ -96,7 +96,7 @@
                 <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                     <h4 class="font-medium text-amber-900">Budget Reset</h4>
                     <p class="text-sm text-amber-700 mt-1">
-                        The monthly budget resets automatically at the beginning of each month.
+                        Users can reset the budget manually from their budget page.
                         Current month: {{ currentMonthYear }}
                     </p>
                 </div>
@@ -109,16 +109,60 @@
                 </div>
             </div>
         </AppCard>
+
+        <!-- Budget History -->
+        <AppCard title="Budget History">
+            <div v-if="loadingHistory" class="text-center py-8">
+                <p class="text-gray-500">Loading history...</p>
+            </div>
+            <div v-else-if="history.length === 0" class="text-center py-8">
+                <p class="text-gray-500">No budget history yet.</p>
+            </div>
+            <div v-else class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Budget Limit</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Approved</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Remaining</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expenses</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reset Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr v-for="record in history" :key="record.id">
+                            <td class="px-4 py-3 text-sm text-gray-900">
+                                {{ monthName(record.month) }} {{ record.year }}
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-900">₱{{ formatAmount(record.budget_limit) }}</td>
+                            <td class="px-4 py-3 text-sm text-green-600">₱{{ formatAmount(record.total_approved) }}</td>
+                            <td class="px-4 py-3 text-sm" :class="record.remaining_budget > 0 ? 'text-blue-600' : 'text-red-600'">
+                                ₱{{ formatAmount(record.remaining_budget) }}
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-900">
+                                <span class="text-green-600">{{ record.approved_count }} approved</span> /
+                                <span class="text-red-600">{{ record.rejected_count }} rejected</span>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-500">{{ formatDate(record.reset_at) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </AppCard>
         </div>
     </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAdminExpenseStore } from '../../stores/expense';
+import budgetService from '../../services/budgetService';
 import AppCard from '../../components/AppCard.vue';
 
 const adminStore = useAdminExpenseStore();
+const history = ref([]);
+const loadingHistory = ref(false);
 
 const dashboard = computed(() => adminStore.dashboard);
 
@@ -137,11 +181,40 @@ const currentMonthYear = computed(() => {
     return new Date().toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
 });
 
+const monthName = (month) => {
+    const months = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+    return months[month];
+};
+
 const formatAmount = (amount) => {
     return parseFloat(amount).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 };
 
+const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-PH', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
+
+const fetchHistory = async () => {
+    loadingHistory.value = true;
+    try {
+        const response = await budgetService.getBudgetHistory();
+        history.value = response.data.data;
+    } catch (error) {
+        console.error('Failed to fetch budget history:', error);
+    } finally {
+        loadingHistory.value = false;
+    }
+};
+
 onMounted(() => {
     adminStore.fetchDashboard();
+    fetchHistory();
 });
 </script>
