@@ -141,8 +141,13 @@
                                 ₱{{ formatAmount(record.remaining_budget) }}
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-900">
-                                <span class="text-green-600">{{ record.approved_count }} approved</span> /
-                                <span class="text-red-600">{{ record.rejected_count }} rejected</span>
+                                <div class="space-y-1">
+                                    <div><span class="font-medium">{{ record.total_expenses_count || 0 }}</span> total</div>
+                                    <div class="text-xs">
+                                        <span class="text-green-600">{{ record.approved_count || 0 }} approved</span> ·
+                                        <span class="text-red-600">{{ record.rejected_count || 0 }} rejected</span>
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-500">{{ formatDate(record.reset_at) }}</td>
                         </tr>
